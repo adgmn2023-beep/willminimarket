@@ -7,7 +7,7 @@
     id: null,
     name: "Will Minimarket",
     address: "Campo Grande, Rio de Janeiro - RJ",
-    whatsapp: "(21) 96902-1990",
+    whatsapp: "5521969021990",
     isOpen: true,
     deliveryFee: 0,
     estimatedTime: "-"
