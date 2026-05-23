@@ -232,13 +232,13 @@
   }
 
   function statusOptions(current) {
-    const statuses = ["novo", "confirmado", "em_preparo", "saiu_para_entrega", "entregue", "cancelado"];
+    const statuses = ["novo", "confirmado", "em preparo", "saiu para entrega", "entregue", "cancelado"];
     if (current && !statuses.includes(current)) {
       statuses.unshift(current);
     }
     return statuses.map(function (status) {
       return '<option value="' + escapeHtml(status) + '"' + (status === current ? " selected" : "") + ">" +
-        escapeHtml(status.replaceAll("_", " ")) + "</option>";
+        escapeHtml(status) + "</option>";
     }).join("");
   }
 
