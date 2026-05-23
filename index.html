@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1B4D1E">
+    <title>Cardápio | Will Minimarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+  </head>
+  <body class="client-page">
+    <header class="store-header">
+      <div class="store-header__brand container">
+        <img class="brand-logo" src="assets/logo.png" alt="Logo Will Minimarket">
+        <div>
+          <p class="eyebrow">Padaria e mercadinho</p>
+          <h1 id="store-name">Will Minimarket</h1>
+          <p class="store-address" id="store-address">Campo Grande, Rio de Janeiro - RJ</p>
+        </div>
+        <span class="status-pill" id="store-status">Aberta</span>
+      </div>
+      <div class="service-strip container">
+        <span id="estimated-time">Entrega estimada: 40-60 min</span>
+        <span id="delivery-fee">Taxa de entrega: R$ 5,00</span>
+      </div>
+    </header>
+
+    <div class="closed-notice is-hidden" id="closed-notice" role="alert">
+      Loja fechada no momento.
+    </div>
+
+    <nav class="category-bar" aria-label="Categorias do cardápio">
+      <div class="category-bar__inner container" id="category-nav"></div>
+    </nav>
+
+    <main class="container menu-content">
+      <section class="skeleton-grid" id="menu-skeleton" aria-label="Carregando produtos">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </section>
+      <div id="menu-sections" class="is-hidden"></div>
+    </main>
+
+    <button class="cart-float" id="open-cart" type="button" aria-controls="cart-drawer" aria-expanded="false">
+      <span class="cart-float__icon" aria-hidden="true">&#128722;<span class="cart-badge" id="cart-badge">0</span></span>
+      <span>
+        <strong>Ver carrinho</strong>
+        <small id="cart-quantity">Nenhum item</small>
+      </span>
+      <strong id="cart-total">R$ 0,00</strong>
+    </button>
+
+    <div class="drawer-backdrop is-hidden" id="drawer-backdrop"></div>
+    <aside class="cart-drawer" id="cart-drawer" aria-label="Carrinho de compras" aria-hidden="true">
+      <header class="drawer-header">
+        <div>
+          <p class="eyebrow">Seu pedido</p>
+          <h2>Carrinho</h2>
+        </div>
+        <button class="icon-button" id="close-cart" type="button" aria-label="Fechar carrinho">&times;</button>
+      </header>
+
+      <div class="drawer-scroll">
+        <div class="empty-cart" id="empty-cart">
+          <strong>Seu carrinho está vazio</strong>
+          <span>Adicione itens deliciosos do cardápio.</span>
+        </div>
+        <ul class="cart-items" id="cart-items"></ul>
+        <button class="text-button is-hidden" id="clear-cart" type="button">Limpar carrinho</button>
+
+        <form class="checkout-form" id="checkout-form">
+          <h3>Finalizar pedido</h3>
+          <label class="field">
+            <span>Nome completo *</span>
+            <input name="customerName" type="text" autocomplete="name" required>
+          </label>
+          <label class="field">
+            <span>Telefone *</span>
+            <input name="customerPhone" type="tel" autocomplete="tel" required placeholder="(21) 98888-7777">
+          </label>
+
+          <fieldset class="choice-group">
+            <legend>Forma de entrega *</legend>
+            <label><input type="radio" name="deliveryMethod" value="Retirada na loja" checked> Retirada na loja</label>
+            <label><input type="radio" name="deliveryMethod" value="Delivery"> Delivery</label>
+          </fieldset>
+
+          <label class="field is-hidden" id="address-field">
+            <span>Endereço completo *</span>
+            <textarea name="address" rows="2" placeholder="Rua, número, bairro, complemento"></textarea>
+          </label>
+
+          <fieldset class="choice-group">
+            <legend>Forma de pagamento *</legend>
+            <label><input type="radio" name="paymentMethod" value="Dinheiro" required> Dinheiro</label>
+            <label><input type="radio" name="paymentMethod" value="PIX"> PIX</label>
+            <label><input type="radio" name="paymentMethod" value="Cartão de débito"> Cartão de débito</label>
+            <label><input type="radio" name="paymentMethod" value="Cartão de crédito"> Cartão de crédito</label>
+          </fieldset>
+
+          <label class="field is-hidden" id="change-field">
+            <span>Troco para quanto?</span>
+            <input name="changeFor" type="text" inputmode="decimal" placeholder="Ex.: R$ 50,00">
+          </label>
+
+          <label class="field">
+            <span>Observações</span>
+            <textarea name="notes" rows="3" placeholder="Alguma preferência para o pedido?"></textarea>
+          </label>
+
+          <div class="order-summary">
+            <div><span>Subtotal</span><strong id="summary-subtotal">R$ 0,00</strong></div>
+            <div class="is-hidden" id="summary-fee-row"><span>Entrega</span><strong id="summary-fee">R$ 0,00</strong></div>
+            <div class="order-summary__total"><span>Total</span><strong id="summary-total">R$ 0,00</strong></div>
+          </div>
+
+          <button class="primary-button whatsapp-button" id="submit-order" type="submit" disabled>
+            Enviar pedido via WhatsApp
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+
+    <script src="data.js"></script>
+    <script src="client.js"></script>
+  </body>
+</html>

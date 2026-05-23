@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1B4D1E">
+    <title>Painel Administrativo | Will Minimarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+  </head>
+  <body class="admin-page">
+    <header class="admin-header">
+      <div class="container admin-header__inner">
+        <div class="admin-brand">
+          <img src="assets/logo.png" alt="Logo Will Minimarket">
+          <div>
+            <p class="eyebrow">Painel administrativo</p>
+            <h1>Will Minimarket</h1>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a class="secondary-button" href="index.html" target="_blank" rel="noopener">Ver cardápio</a>
+          <button class="secondary-button" id="logout-button" type="button">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container admin-content">
+      <section class="dashboard" aria-label="Resumo">
+        <article class="summary-card">
+          <span>Produtos cadastrados</span>
+          <strong id="product-count">0</strong>
+        </article>
+        <article class="summary-card">
+          <span>Produtos disponíveis</span>
+          <strong id="available-count">0</strong>
+        </article>
+        <article class="summary-card">
+          <span>Categorias ativas</span>
+          <strong id="category-count">0</strong>
+        </article>
+        <article class="summary-card">
+          <span>Status da loja</span>
+          <strong id="dashboard-status">Aberta</strong>
+        </article>
+      </section>
+
+      <section class="admin-panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Catálogo</p>
+            <h2>Produtos</h2>
+          </div>
+          <button class="primary-button compact" id="new-product-button" type="button">Novo produto</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="product-table">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="product-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Atendimento</p>
+            <h2>Pedidos</h2>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="product-table orders-table">
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Entrega</th>
+                <th>Status</th>
+                <th>Data / Hora</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="admin-columns">
+        <section class="admin-panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Organização</p>
+              <h2>Categorias</h2>
+            </div>
+            <button class="primary-button compact" id="new-category-button" type="button">Nova</button>
+          </div>
+          <ul class="category-admin-list" id="category-admin-list"></ul>
+        </section>
+
+        <section class="admin-panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Atendimento</p>
+              <h2>Configurações da loja</h2>
+            </div>
+          </div>
+          <form class="settings-form" id="settings-form">
+            <label class="field">
+              <span>Nome da loja</span>
+              <input name="name" type="text" required>
+            </label>
+            <label class="field">
+              <span>Endereço</span>
+              <input name="address" type="text" required>
+            </label>
+            <label class="field">
+              <span>WhatsApp</span>
+              <input name="whatsapp" type="tel" required placeholder="(21) 99999-9999">
+            </label>
+            <div class="field-row">
+              <label class="field">
+                <span>Taxa de entrega (R$)</span>
+                <input name="deliveryFee" type="number" min="0" step="0.01" required>
+              </label>
+              <label class="field">
+                <span>Tempo estimado</span>
+                <input name="estimatedTime" type="text" required placeholder="40-60 min">
+              </label>
+            </div>
+            <fieldset class="choice-group">
+              <legend>Status da loja</legend>
+              <label><input type="radio" name="isOpen" value="true"> Aberta</label>
+              <label><input type="radio" name="isOpen" value="false"> Fechada</label>
+            </fieldset>
+            <button class="primary-button" type="submit">Salvar configurações</button>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <dialog class="admin-modal" id="product-modal">
+      <form class="modal-form" id="product-form">
+        <header class="modal-header">
+          <h2 id="product-modal-title">Novo produto</h2>
+          <button class="icon-button" type="button" data-close-modal="product-modal" aria-label="Fechar">&times;</button>
+        </header>
+        <input name="id" type="hidden">
+        <label class="field">
+          <span>Nome do produto *</span>
+          <input name="name" type="text" required>
+        </label>
+        <label class="field">
+          <span>Descrição *</span>
+          <textarea name="description" rows="2" required></textarea>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>Preço (R$) *</span>
+            <input name="price" type="number" min="0.01" step="0.01" required>
+          </label>
+          <label class="field">
+            <span>Categoria *</span>
+            <select name="categoryId" id="product-category-select" required></select>
+          </label>
+        </div>
+        <div class="field">
+          <span>Imagem do produto</span>
+          <div class="image-dropzone" id="product-image-dropzone" role="button" tabindex="0" aria-label="Selecionar imagem do produto">
+            <input id="product-image-input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden>
+            <div class="image-upload-prompt" id="product-image-prompt">
+              <span class="upload-icon" aria-hidden="true">&#8679;</span>
+              <strong>Arraste a imagem aqui ou clique para selecionar</strong>
+              <small>JPG, PNG ou WEBP &bull; Máximo 5MB</small>
+            </div>
+            <div class="selected-image-preview is-hidden" id="selected-image-preview">
+              <button class="remove-image-button" id="remove-product-image" type="button" aria-label="Remover imagem">&times;</button>
+              <img id="product-image-preview" alt="Prévia da imagem do produto">
+              <span id="product-image-filename"></span>
+            </div>
+          </div>
+        </div>
+        <label class="toggle-label">
+          <input name="available" type="checkbox" checked>
+          <span>Produto disponível no cardápio</span>
+        </label>
+        <footer class="modal-actions">
+          <button class="secondary-button" type="button" data-close-modal="product-modal">Cancelar</button>
+          <button class="primary-button compact" type="submit">Salvar produto</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="admin-modal small" id="category-modal">
+      <form class="modal-form" id="category-form">
+        <header class="modal-header">
+          <h2 id="category-modal-title">Nova categoria</h2>
+          <button class="icon-button" type="button" data-close-modal="category-modal" aria-label="Fechar">&times;</button>
+        </header>
+        <input name="id" type="hidden">
+        <label class="field">
+          <span>Nome da categoria *</span>
+          <input name="name" type="text" required>
+        </label>
+        <label class="field">
+          <span>Ordem de exibição *</span>
+          <input name="order" type="number" min="1" step="1" required>
+        </label>
+        <label class="toggle-label">
+          <input name="active" type="checkbox" checked>
+          <span>Categoria ativa</span>
+        </label>
+        <footer class="modal-actions">
+          <button class="secondary-button" type="button" data-close-modal="category-modal">Cancelar</button>
+          <button class="primary-button compact" type="submit">Salvar categoria</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+    <script src="auth.js"></script>
+    <script src="data.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

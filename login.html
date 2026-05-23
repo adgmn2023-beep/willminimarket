@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1B4D1E">
+    <title>Login Administrativo | Will Minimarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+  </head>
+  <body class="auth-page">
+    <main class="auth-card">
+      <img class="auth-logo" src="assets/logo.png" alt="Logo Will Minimarket">
+      <p class="eyebrow">Área administrativa</p>
+      <h1>Bem-vindo de volta</h1>
+      <p class="muted">Entre para atualizar produtos, preços e informações da loja.</p>
+      <form class="auth-form" id="login-form">
+        <label class="field">
+          <span>Email</span>
+          <input name="email" type="email" autocomplete="username" required autofocus>
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <p class="form-error is-hidden" id="login-error" role="alert">Usuário ou senha inválidos.</p>
+        <button class="primary-button" type="submit">Entrar</button>
+      </form>
+      <a class="back-link" href="index.html">Voltar ao cardápio</a>
+    </main>
+    <script src="auth.js"></script>
+  </body>
+</html>
