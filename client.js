@@ -319,8 +319,22 @@
     return lines.join("\n");
   }
 
+  function normalizedDeliveryMethod(value) {
+    return value === "Delivery" ? "delivery" : "retirada";
+  }
+
+  function normalizedPaymentMethod(value) {
+    return {
+      "Dinheiro": "dinheiro",
+      "PIX": "pix",
+      "Cartão de débito": "debito",
+      "Cartão de crédito": "credito"
+    }[value];
+  }
+
   function buildOrder(formData) {
     const delivery = formData.get("deliveryMethod");
+    const payment = formData.get("paymentMethod");
     const items = Object.entries(state.cart).map(function (entry) {
       const product = productById(entry[0]);
       const quantity = Number(entry[1]);
@@ -334,10 +348,10 @@
     return {
       nome_cliente: formData.get("customerName").trim(),
       telefone: formData.get("customerPhone").trim(),
-      forma_entrega: delivery,
+      forma_entrega: normalizedDeliveryMethod(delivery),
       endereco: delivery === "Delivery" ? formData.get("address").trim() : null,
-      forma_pagamento: formData.get("paymentMethod"),
-      troco_para: formData.get("paymentMethod") === "Dinheiro" ? (formData.get("changeFor").trim() || null) : null,
+      forma_pagamento: normalizedPaymentMethod(payment),
+      troco_para: payment === "Dinheiro" ? (formData.get("changeFor").trim() || null) : null,
       observacoes: formData.get("notes").trim() || null,
       itens: items,
       subtotal: Number(subtotal().toFixed(2)),
