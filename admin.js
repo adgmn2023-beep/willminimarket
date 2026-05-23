@@ -7,6 +7,10 @@
     categories: [],
     settings: {},
     orders: [],
+    notifiedOrderIds: new Set(),
+    audioContext: null,
+    audioEnabled: false,
+    pollingTimer: null,
     imageUpload: {
       file: null,
       currentUrl: "",
@@ -32,7 +36,9 @@
     categoryModal: document.getElementById("category-modal"),
     categoryForm: document.getElementById("category-form"),
     settingsForm: document.getElementById("settings-form"),
-    toasts: document.getElementById("toast-region")
+    toasts: document.getElementById("toast-region"),
+    alertRegion: document.getElementById("order-alert-region"),
+    enableAudioAlerts: document.getElementById("enable-audio-alerts")
   };
 
   function escapeHtml(value) {
@@ -49,6 +55,74 @@
     window.setTimeout(function () {
       notification.remove();
     }, 2800);
+  }
+
+  function audioContext() {
+    if (!state.audioContext) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        state.audioContext = new AudioContext();
+      }
+    }
+    return state.audioContext;
+  }
+
+  function beep(context, frequency, start, duration, volume) {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(volume, start + 0.015);
+    gain.gain.linearRampToValueAtTime(0, start + duration);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.01);
+  }
+
+  function playNotificationSound() {
+    if (!state.audioEnabled) {
+      return;
+    }
+    const context = audioContext();
+    if (!context) {
+      return;
+    }
+    const start = context.currentTime;
+    beep(context, 880, start, 0.15, 0.16);
+    beep(context, 1100, start + 0.25, 0.15, 0.16);
+  }
+
+  async function enableAudioAlerts() {
+    const context = audioContext();
+    if (!context) {
+      toast("Alertas sonoros não são suportados neste navegador.", "error");
+      return;
+    }
+    await context.resume();
+    beep(context, 440, context.currentTime, 0.02, 0);
+    state.audioEnabled = true;
+    elements.enableAudioAlerts.classList.add("is-hidden");
+    toast("Alertas sonoros ativados.");
+  }
+
+  function showOrderAlert(order) {
+    const alert = document.createElement("div");
+    alert.className = "order-alert";
+    alert.innerHTML = '<span class="order-alert__icon" aria-hidden="true">&#128722;</span>' +
+      '<span class="order-alert__text">Novo pedido recebido! — Cliente: ' +
+      escapeHtml(order.nome_cliente) + " — Total: " + data.formatMoney(order.total) + "</span>" +
+      '<button class="order-alert__close" type="button" aria-label="Fechar alerta">&times;</button>';
+    const closeButton = alert.querySelector(".order-alert__close");
+    const timeout = window.setTimeout(function () {
+      alert.remove();
+    }, 8000);
+    closeButton.addEventListener("click", function () {
+      window.clearTimeout(timeout);
+      alert.remove();
+    });
+    elements.alertRegion.appendChild(alert);
   }
 
   async function loadState() {
@@ -196,6 +270,32 @@
   async function refresh() {
     await loadState();
     renderAll();
+  }
+
+  async function pollNewOrders() {
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    try {
+      const orders = await data.getRecentNewOrders(twoMinutesAgo);
+      const unalerted = orders.filter(function (order) {
+        return !state.notifiedOrderIds.has(String(order.id));
+      });
+      if (unalerted.length) {
+        unalerted.slice().reverse().forEach(function (order) {
+          state.notifiedOrderIds.add(String(order.id));
+          playNotificationSound();
+          showOrderAlert(order);
+        });
+        state.orders = await data.getOrders();
+        renderOrders();
+      }
+    } catch (error) {
+      console.error("Falha ao buscar novos pedidos:", error);
+    }
+  }
+
+  function startOrderPolling() {
+    pollNewOrders();
+    state.pollingTimer = window.setInterval(pollNewOrders, 30000);
   }
 
   function releasePreviewUrl() {
@@ -461,6 +561,7 @@
     elements.productBody.addEventListener("click", handleProductAction);
     elements.categoryList.addEventListener("click", handleCategoryAction);
     elements.ordersBody.addEventListener("change", handleOrderStatus);
+    elements.enableAudioAlerts.addEventListener("click", enableAudioAlerts);
     elements.productForm.addEventListener("submit", saveProduct);
     elements.categoryForm.addEventListener("submit", saveCategory);
     elements.settingsForm.addEventListener("submit", saveSettings);
@@ -517,6 +618,7 @@
     data.checkProductBucket();
     try {
       await refresh();
+      startOrderPolling();
     } catch (error) {
       console.error("Falha ao carregar painel:", error);
       toast("Não foi possível carregar os dados do painel.", "error");

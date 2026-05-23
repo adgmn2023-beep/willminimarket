@@ -306,6 +306,16 @@
     return assertResult(result, "carregar pedidos");
   }
 
+  async function getRecentNewOrders(sinceIso) {
+    const result = await supabaseClient
+      .from("pedidos")
+      .select("*")
+      .eq("status", "novo")
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: false });
+    return assertResult(result, "buscar novos pedidos");
+  }
+
   async function updateOrderStatus(id, status) {
     const result = await supabaseClient.from("pedidos").update({ status: status }).eq("id", id);
     assertResult(result, "atualizar status do pedido");
@@ -341,6 +351,7 @@
     getCategories: getCategories,
     getOrders: getOrders,
     getProducts: getProducts,
+    getRecentNewOrders: getRecentNewOrders,
     getSettings: getSettings,
     markWebhookSent: markWebhookSent,
     placeholderImage: placeholderImage,
